@@ -1,0 +1,22 @@
+{
+  "name": "backend",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "medusa develop",
+    "start": "medusa start",
+    "build": "medusa build"
+  },
+  "dependencies": {
+    "@medusajs/medusa": "^2.13.5",
+    "@medusajs/framework": "^2.13.5",
+    "@medusajs/utils": "^2.13.5",
+    "pg": "^8.13.0"
+  },
+  "devDependencies": {
+    "@medusajs/cli": "^2.13.5",
+    "typescript": "^5.6.0",
+    "ts-node": "^10.9.2"
+  }
+}
