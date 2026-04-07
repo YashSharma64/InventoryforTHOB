@@ -15,6 +15,12 @@ Inventory management system for **Thob Builder** - a 3D platform integration. Bu
 
 ---
 
+## Key Design Decision
+
+> This system uses Medusa's built-in **Product module** as the inventory model, extended using **metadata** for flexibility and faster development.
+
+---
+
 ## Project Structure
 
 ```
@@ -25,13 +31,6 @@ InventoryforTHOB/
 |   |   |-- api/routes/
 |   |   |   |-- admin/inventory.ts    # Admin CRUD endpoints
 |   |   |   `-- store/inventory.ts    # Public read endpoints
-|   |   |-- modules/
-|   |   |   `-- inventory/           # Custom Inventory Module
-|   |   |       |-- models/
-|   |   |       |   `-- inventory-item.ts
-|   |   |       |-- services/
-|   |   |       |   `-- inventory-service.ts
-|   |   |       `-- index.ts
 |   |   `-- index.ts
 |   |-- medusa-config.js
 |   |-- .env
@@ -81,15 +80,20 @@ InventoryforTHOB/
 ## Data Model
 
 ```typescript
-InventoryItem {
+InventoryItem (via Medusa Product) {
   id: string
   title: string
   description?: string
-  type: "3d_model" | "material" | "template"
-  progress_status: "not_started" | "in_progress" | "completed"
-  builder_link?: string
   thumbnail?: string
-  metadata?: object
+
+  metadata: {
+    type: "3d_model" | "material" | "template"
+    progress_status: "not_started" | "in_progress" | "completed"
+    builder_link?: string
+  }
+
+  created_at: Date
+  updated_at: Date
 }
 ```
 
@@ -110,7 +114,6 @@ cd InventoryforTHOB
 cd backend
 cp .env.example .env    # Configure DATABASE_URL
 npm install
-npm run db:migrate      # Run migrations
 npm run dev
 ```
 
@@ -130,14 +133,13 @@ Runs at: `http://localhost:5173`
 
 ## Status
 
-**Backend Complete** - Custom module with full CRUD operations.
+**Backend Boilerplate Complete** - CRUD endpoints using Medusa Product module.
 **Frontend In Progress** - UI needs to be built.
 
 ---
 
 ## Roadmap
 
-- [x] Custom Inventory Module
 - [x] Admin CRUD endpoints
 - [x] Store read endpoints
 - [ ] Inventory list UI

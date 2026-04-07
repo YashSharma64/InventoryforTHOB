@@ -1,5 +1,4 @@
 import { Router } from "express"
-import { INVENTORY_MODULE } from "../../../modules/inventory"
 
 const route = Router()
 
@@ -8,21 +7,21 @@ export default (app) => {
 
   // GET /admin/inventory - List all inventory items
   route.get("/", async (req, res) => {
-    const inventoryService = req.scope.resolve(INVENTORY_MODULE)
+    const productService = req.scope.resolve("productService")
 
-    const items = await inventoryService.listInventoryItems()
+    const products = await productService.list()
 
-    res.json({ inventory_items: items })
+    res.json({ inventory_items: products })
   })
 
   // GET /admin/inventory/:id - Get single inventory item
   route.get("/:id", async (req, res) => {
-    const inventoryService = req.scope.resolve(INVENTORY_MODULE)
+    const productService = req.scope.resolve("productService")
     const { id } = req.params
 
     try {
-      const item = await inventoryService.retrieveInventoryItem(id)
-      res.json({ inventory_item: item })
+      const product = await productService.retrieve(id)
+      res.json({ inventory_item: product })
     } catch (error) {
       res.status(404).json({ message: "Inventory item not found" })
     }
@@ -30,44 +29,45 @@ export default (app) => {
 
   // POST /admin/inventory - Create inventory item
   route.post("/", async (req, res) => {
-    const inventoryService = req.scope.resolve(INVENTORY_MODULE)
-    const { title, description, type, progress_status, builder_link, thumbnail, metadata } = req.body
+    const productService = req.scope.resolve("productService")
+    const { title, description, type, progress_status, builder_link, thumbnail } = req.body
 
     if (!title) {
       return res.status(400).json({ message: "Title is required" })
     }
 
-    const item = await inventoryService.createInventoryItems({
+    const product = await productService.create({
       title,
       description,
-      type: type || "3d_model",
-      progress_status: progress_status || "not_started",
-      builder_link,
       thumbnail,
-      metadata,
+      metadata: {
+        type: type || "3d_model",
+        progress_status: progress_status || "not_started",
+        builder_link: builder_link || "",
+      },
     })
 
-    res.status(201).json({ inventory_item: item })
+    res.status(201).json({ inventory_item: product })
   })
 
   // PUT /admin/inventory/:id - Update inventory item
   route.put("/:id", async (req, res) => {
-    const inventoryService = req.scope.resolve(INVENTORY_MODULE)
+    const productService = req.scope.resolve("productService")
     const { id } = req.params
-    const { title, description, type, progress_status, builder_link, thumbnail, metadata } = req.body
+    const { title, description, type, progress_status, builder_link, thumbnail } = req.body
 
     try {
-      const item = await inventoryService.updateInventoryItems({
-        id,
+      const product = await productService.update(id, {
         title,
         description,
-        type,
-        progress_status,
-        builder_link,
         thumbnail,
-        metadata,
+        metadata: {
+          type,
+          progress_status,
+          builder_link,
+        },
       })
-      res.json({ inventory_item: item })
+      res.json({ inventory_item: product })
     } catch (error) {
       res.status(404).json({ message: "Inventory item not found" })
     }
@@ -75,11 +75,11 @@ export default (app) => {
 
   // DELETE /admin/inventory/:id - Delete inventory item
   route.delete("/:id", async (req, res) => {
-    const inventoryService = req.scope.resolve(INVENTORY_MODULE)
+    const productService = req.scope.resolve("productService")
     const { id } = req.params
 
     try {
-      await inventoryService.deleteInventoryItems(id)
+      await productService.delete(id)
       res.json({ id, deleted: true })
     } catch (error) {
       res.status(404).json({ message: "Inventory item not found" })
