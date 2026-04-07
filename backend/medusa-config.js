@@ -1,4 +1,5 @@
 import { Modules } from "@medusajs/framework/utils"
+import InventoryModule from "./src/modules/inventory"
 
 /** @type {import('@medusajs/framework/types').MedusaConfig} */
 export default {
@@ -32,5 +33,7 @@ export default {
       },
     },
     [Modules.WORKFLOW_ENGINE]: true,
+    // Custom Inventory Module for Thob Builder
+    inventory: InventoryModule,
   },
 }

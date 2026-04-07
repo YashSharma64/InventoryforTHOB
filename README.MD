@@ -1,8 +1,8 @@
-# 🚀 Inventory Management System (Medusa + React)
+# Inventory Management System (Medusa + React)
 
 ## Overview
 
-Inventory management system for **Thob Builder** - a 3D platform integration. Built with **MedusaJS (backend)** and **React + Vite (frontend)**.
+Inventory management system for **Thob Builder** - a 3D platform integration. Built with **MedusaJS v2 (backend)** and **React + Vite (frontend)**.
 
 ---
 
@@ -10,7 +10,7 @@ Inventory management system for **Thob Builder** - a 3D platform integration. Bu
 
 | Layer | Technology |
 |-------|------------|
-| Backend | MedusaJS, Node.js, PostgreSQL |
+| Backend | MedusaJS v2, Node.js, PostgreSQL |
 | Frontend | React (Vite), Tailwind CSS |
 
 ---
@@ -23,8 +23,15 @@ InventoryforTHOB/
 |-- backend/
 |   |-- src/
 |   |   |-- api/routes/
-|   |   |   |-- admin/inventory.ts
-|   |   |   `-- store/inventory.ts
+|   |   |   |-- admin/inventory.ts    # Admin CRUD endpoints
+|   |   |   `-- store/inventory.ts    # Public read endpoints
+|   |   |-- modules/
+|   |   |   `-- inventory/           # Custom Inventory Module
+|   |   |       |-- models/
+|   |   |       |   `-- inventory-item.ts
+|   |   |       |-- services/
+|   |   |       |   `-- inventory-service.ts
+|   |   |       `-- index.ts
 |   |   `-- index.ts
 |   |-- medusa-config.js
 |   |-- .env
@@ -52,20 +59,39 @@ InventoryforTHOB/
 
 ## API Endpoints
 
-### Custom Endpoints
+### Admin Endpoints (Protected)
 
 | Method | Endpoint | Description |
 |--------|----------|-------------|
+| GET | `/admin/inventory` | List all inventory items |
+| GET | `/admin/inventory/:id` | Get single inventory item |
 | POST | `/admin/inventory` | Create inventory item |
-| GET | `/store/inventory` | Fetch all inventory |
+| PUT | `/admin/inventory/:id` | Update inventory item |
+| DELETE | `/admin/inventory/:id` | Delete inventory item |
 
-### Default Medusa APIs
+### Store Endpoints (Public)
 
 | Method | Endpoint | Description |
 |--------|----------|-------------|
-| GET | `/store/products` | List products |
-| GET | `/store/products/:id` | Get product by ID |
-| POST | `/admin/products` | Create product |
+| GET | `/store/inventory` | List all inventory items |
+| GET | `/store/inventory/:id` | Get single inventory item |
+
+---
+
+## Data Model
+
+```typescript
+InventoryItem {
+  id: string
+  title: string
+  description?: string
+  type: "3d_model" | "material" | "template"
+  progress_status: "not_started" | "in_progress" | "completed"
+  builder_link?: string
+  thumbnail?: string
+  metadata?: object
+}
+```
 
 ---
 
@@ -82,7 +108,9 @@ cd InventoryforTHOB
 
 ```bash
 cd backend
+cp .env.example .env    # Configure DATABASE_URL
 npm install
+npm run db:migrate      # Run migrations
 npm run dev
 ```
 
@@ -102,12 +130,16 @@ Runs at: `http://localhost:5173`
 
 ## Status
 
-**In Development** - Backend routes are set up. Frontend UI needs to be built.
+**Backend Complete** - Custom module with full CRUD operations.
+**Frontend In Progress** - UI needs to be built.
 
 ---
 
 ## Roadmap
 
+- [x] Custom Inventory Module
+- [x] Admin CRUD endpoints
+- [x] Store read endpoints
 - [ ] Inventory list UI
 - [ ] Add/Edit inventory forms
 - [ ] Status tracking
