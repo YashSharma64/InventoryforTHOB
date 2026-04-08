@@ -7,11 +7,22 @@ export default {
     http: {
       storeCors: process.env.STORE_CORS || "http://localhost:5173",
       adminCors: process.env.ADMIN_CORS || "http://localhost:5173",
+      authCors: "*",
+      jwtSecret: process.env.JWT_SECRET || "super-secret-jwt-token",
+      cookieSecret: process.env.COOKIE_SECRET || "super-secret-cookie-token",
     },
   },
   modules: {
     [Modules.API_KEY]: true,
-    [Modules.AUTH]: true,
+    [Modules.AUTH]: {
+      providers: [
+        {
+          resolve: "@medusajs/auth-emailpass",
+          id: "emailpass",
+          options: {},
+        },
+      ],
+    },
     [Modules.CART]: true,
     [Modules.CURRENCY]: true,
     [Modules.CUSTOMER]: true,
