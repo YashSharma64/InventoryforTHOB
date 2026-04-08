@@ -28,9 +28,13 @@ InventoryforTHOB/
 |
 |-- backend/
 |   |-- src/
-|   |   |-- api/routes/
-|   |   |   |-- admin/inventory.ts    # Admin CRUD endpoints
-|   |   |   `-- store/inventory.ts    # Public read endpoints
+|   |   |-- api/
+|   |   |   |-- admin/inventory/     # Admin CRUD endpoints
+|   |   |   |   |-- route.ts         # GET, POST
+|   |   |   |   `-- [id]/route.ts    # GET, PUT, DELETE
+|   |   |   `-- store/inventory/     # Public read endpoints
+|   |   |       |-- route.ts         # GET
+|   |   |       `-- [id]/route.ts    # GET
 |   |   `-- index.ts
 |   |-- medusa-config.js
 |   |-- .env
