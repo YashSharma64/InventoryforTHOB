@@ -22,6 +22,7 @@ export const POST = async (req, res) => {
   const [product] = await productModuleService.createProducts([
     {
       title,
+      handle: `${title.toLowerCase().replace(/[^a-z0-9]+/g, '-')}-${Date.now()}`,
       description,
       thumbnail,
       options: [{ title: "Default", values: ["Default"] }],
