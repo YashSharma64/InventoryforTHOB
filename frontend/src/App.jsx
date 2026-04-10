@@ -46,7 +46,7 @@ const Sidebar = ({ activeTab }) => {
 const Header = ({ onAddClick }) => (
   <header className="border-b border-white/5 py-8 flex items-center justify-between mb-10 relative">
     <div className="flex-1 flex justify-start">
-      <h2 className="text-3xl font-semibold text-white tracking-tight">Inventory</h2>
+      <h2 className="text-3xl font-semibold text-white tracking-tight font-sans">Inventory Management</h2>
     </div>
     <motion.button 
       whileHover={{ scale: 1.02, boxShadow: '0 0 15px rgba(255,122,0,0.3)' }}
