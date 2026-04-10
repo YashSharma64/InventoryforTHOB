@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 
 // --- COMPONENTS ---
 
@@ -11,110 +12,146 @@ const Sidebar = ({ activeTab }) => {
   ];
 
   return (
-    <aside className="w-64 flex flex-col pt-12 relative flex-shrink-0">
-      <div className="pl-12 mb-8">
-        <h1 className="text-3xl font-medium tracking-tight text-[#F28B59]">thob</h1>
+    <aside className="w-64 flex flex-col pt-12 relative flex-shrink-0 bg-[#0B0B0B] border-r border-white/5">
+      <div className="pl-12 mb-12">
+        <h1 className="text-3xl font-bold tracking-tight text-[#FF7A00] tracking-wider">THOB.</h1>
       </div>
-      <div className="bg-[#FAEBE4] flex-1 rounded-tr-[40px] pt-12 pl-12 flex flex-col gap-8 shadow-sm">
-        {navItems.map((item, i) => (
-          <div 
-            key={i} 
-            className={`cursor-pointer transition-colors ${
-              (item.active || activeTab === item.name) 
-                ? 'text-gray-900 font-medium' 
-                : 'text-gray-500 hover:text-gray-800'
-            }`}
-          >
-            {item.name}
-          </div>
-        ))}
+      <div className="flex-1 pt-4 pl-12 flex flex-col gap-6">
+        {navItems.map((item, i) => {
+          const isActive = item.active || activeTab === item.name;
+          return (
+            <div 
+              key={i} 
+              className={`group relative cursor-pointer font-medium tracking-wide transition-all duration-300 ${
+                isActive 
+                  ? 'text-white' 
+                  : 'text-[#9CA3AF] hover:text-white hover:opacity-80'
+              }`}
+            >
+              {isActive && (
+                <motion.div 
+                  layoutId="activeSidebar"
+                  className="absolute -left-4 top-1/2 -translate-y-1/2 w-1 h-5 bg-[#FF7A00] rounded-r-[2px] shadow-[0_0_10px_rgba(255,122,0,0.5)]"
+                />
+              )}
+              {item.name}
+            </div>
+          );
+        })}
       </div>
     </aside>
   );
 };
 
 const Header = ({ onAddClick }) => (
-  <header className="border-y border-[#E5DFD9] py-5 flex items-center justify-between mb-8 relative">
-    <div className="flex-1 flex justify-center pr-32">
-      <h2 className="text-2xl text-[#9C9A98]">Inventory</h2>
+  <header className="border-b border-white/5 py-8 flex items-center justify-between mb-10 relative">
+    <div className="flex-1 flex justify-start">
+      <h2 className="text-3xl font-semibold text-white tracking-tight">Inventory</h2>
     </div>
-    <button 
+    <motion.button 
+      whileHover={{ scale: 1.02, boxShadow: '0 0 15px rgba(255,122,0,0.3)' }}
+      whileTap={{ scale: 0.98 }}
       onClick={onAddClick}
-      className="absolute right-0 bg-[#FCAE8F] text-gray-900 px-6 py-2 rounded font-medium hover:bg-[#faa17d] transition-colors shadow-sm"
+      className="bg-[#111111] border border-white/10 text-white px-6 py-2.5 rounded-[5px] font-medium transition-colors hover:border-[#FF7A00] hover:text-[#FF7A00]"
     >
-      + Add items
-    </button>
+      + Add Item
+    </motion.button>
   </header>
 );
 
-const FilterBar = ({ filter, setFilter }) => (
-  <div className="flex gap-8 mb-6 border-b border-[#EAE3DE]">
-    {['All', 'Completed', 'In Progress'].map(f => (
-      <button 
-        key={f}
-        onClick={() => setFilter(f)}
-        className={`pb-3 font-medium transition-colors border-b-2 pt-1 px-1 -mb-[1px] ${
-          filter === f 
-            ? 'border-gray-900 text-gray-900' 
-            : 'border-transparent text-gray-500 hover:text-gray-700'
-        }`}
-      >
-        {f}
-      </button>
-    ))}
-  </div>
-);
+const FilterBar = ({ filter, setFilter }) => {
+  const tabs = ['All', 'Completed', 'In Progress'];
+  
+  return (
+    <div className="flex gap-8 mb-10 border-b border-white/5 relative">
+      {tabs.map(f => {
+        const isActive = filter === f;
+        return (
+          <button 
+            key={f}
+            onClick={() => setFilter(f)}
+            className={`pb-4 font-medium transition-colors relative ${
+              isActive 
+                ? 'text-white' 
+                : 'text-[#9CA3AF] hover:text-gray-300'
+            }`}
+          >
+            {f}
+            {isActive && (
+              <motion.div 
+                layoutId="activeFilter"
+                className="absolute bottom-0 left-0 right-0 h-[2px] bg-[#FF7A00] shadow-[0_0_8px_rgba(255,122,0,0.8)]"
+              />
+            )}
+          </button>
+        );
+      })}
+    </div>
+  );
+};
 
 const Card = ({ item, onMarkCompleted }) => {
-  // Ensure metadata exists to avoid crashes
   const metadata = item.metadata || {};
   const status = metadata.progress_status || 'in_progress';
   const type = metadata.type || 'Unknown';
   const isCompleted = status === 'completed';
 
   return (
-    <div className="bg-white rounded-xl p-6 shadow-sm border border-[#EAE3DE] flex flex-col transition-all hover:shadow-md">
+    <motion.div 
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, scale: 0.95 }}
+      whileHover={{ scale: 1.02, borderColor: 'rgba(255,255,255,0.15)' }}
+      transition={{ duration: 0.3, ease: 'easeOut' }}
+      className="bg-[#111111] rounded-[5px] p-6 shadow-2xl border border-white/5 flex flex-col relative overflow-hidden group"
+    >
+      {/* Subtle Glow Overlay on Hover */}
+      <div className="absolute inset-0 bg-gradient-to-b from-white/[0.02] to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+
       {item.thumbnail && (
-        <div className="h-40 w-full mb-4 bg-gray-50 rounded-lg overflow-hidden border border-gray-100 flex-shrink-0">
-          <img src={item.thumbnail} alt={item.title} className="w-full h-full object-cover" />
+        <div className="h-44 w-full mb-5 bg-black rounded-[3px] overflow-hidden border border-white/5 flex-shrink-0 relative">
+          <img src={item.thumbnail} alt={item.title} className="w-full h-full object-cover opacity-90 group-hover:opacity-100 transition-opacity" />
         </div>
       )}
-      <div className="flex justify-between items-start mb-4">
+      
+      <div className="flex justify-between items-start mb-4 z-10">
         <div>
-          <h3 className="font-semibold text-lg text-gray-900">{item.title}</h3>
-          <span className="text-sm text-gray-500 bg-gray-100 px-2 py-1 rounded inline-block mt-2">
+          <h3 className="font-semibold text-xl text-white tracking-tight">{item.title}</h3>
+          <span className="text-xs text-[#9CA3AF] uppercase tracking-wider bg-white/5 border border-white/10 px-2 py-1 rounded-[3px] inline-block mt-2 font-medium">
             {type.replace('_', ' ')}
           </span>
         </div>
-        <span className={`text-xs px-2.5 py-1 rounded-full font-medium capitalize whitespace-nowrap ${
-          isCompleted 
-            ? 'bg-green-100 text-green-700 border border-green-200' 
-            : 'bg-yellow-100 text-yellow-700 border border-yellow-200'
-        }`}>
-          {status.replace('_', ' ')}
-        </span>
+        <div className={`w-2 h-2 rounded-full mt-2 ${
+          isCompleted ? 'bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.6)]' : 'bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.6)]'
+        }`} title={status === 'not_started' ? 'in_progress' : status} />
       </div>
       
-      <p className="text-gray-500 text-sm mb-6 flex-1 line-clamp-3 overflow-hidden">
+      <p className="text-[#9CA3AF] text-sm mb-8 flex-1 line-clamp-3 overflow-hidden leading-relaxed z-10">
         {item.description}
       </p>
       
-      {!isCompleted ? (
-        <button 
-          onClick={() => onMarkCompleted(item.id)}
-          className="w-full py-2.5 rounded-lg border border-gray-200 text-gray-700 hover:bg-gray-50 hover:border-gray-300 font-medium transition-colors text-sm"
-        >
-          Mark Completed
-        </button>
-      ) : (
-        <button 
-          onClick={() => window.open(metadata.builder_link || 'https://example.com', '_blank')}
-          className="w-full py-2.5 rounded-lg bg-gray-50 border border-gray-200 text-gray-700 hover:bg-gray-100 font-medium transition-colors text-sm"
-        >
-          View Asset
-        </button>
-      )}
-    </div>
+      <div className="z-10 mt-auto">
+        {!isCompleted ? (
+          <motion.button 
+            whileHover={{ backgroundColor: '#FF7A00', color: '#000', borderColor: '#FF7A00' }}
+            whileTap={{ scale: 0.97 }}
+            onClick={() => onMarkCompleted(item.id)}
+            className="w-full py-2.5 rounded-[5px] border border-white/10 text-[#9CA3AF] font-medium transition-colors text-sm uppercase tracking-wider"
+          >
+            Mark Completed
+          </motion.button>
+        ) : (
+          <motion.button 
+            whileHover={{ borderColor: 'rgba(255,255,255,0.4)', color: '#fff' }}
+            whileTap={{ scale: 0.97 }}
+            onClick={() => window.open(metadata.builder_link || 'https://example.com', '_blank')}
+            className="w-full py-2.5 rounded-[5px] bg-white/5 border border-white/10 text-[#9CA3AF] hover:text-white font-medium transition-colors text-sm uppercase tracking-wider shadow-inner"
+          >
+            View Asset
+          </motion.button>
+        )}
+      </div>
+    </motion.div>
   );
 };
 
@@ -127,85 +164,101 @@ const AddItemModal = ({ isOpen, onClose, onSubmit, isSubmitting }) => {
     builder_link: ''
   });
 
-  if (!isOpen) return null;
-
   const handleSubmit = (e) => {
     e.preventDefault();
     onSubmit(formData, () => setFormData({ title: '', description: '', type: '3d_model', thumbnail: '', builder_link: '' }));
   };
 
   return (
-    <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-2xl shadow-xl w-full max-w-md max-h-[90vh] overflow-y-auto animate-in fade-in zoom-in duration-200 custom-scrollbar">
-        <div className="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-[#FFFCF1]/50">
-          <h3 className="font-semibold text-lg text-gray-900">Add New Item</h3>
-          <button onClick={onClose} disabled={isSubmitting} className="text-gray-400 hover:text-gray-600 p-1">
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-              <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
-            </svg>
-          </button>
-        </div>
-        
-        <form onSubmit={handleSubmit} className="px-6 py-6 flex flex-col gap-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Title</label>
-            <input 
-              type="text" required disabled={isSubmitting} value={formData.title}
-              onChange={e => setFormData({...formData, title: e.target.value})}
-              className="w-full border border-gray-200 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-[#FCAE8F] transition-shadow bg-gray-50 disabled:opacity-50"
-              placeholder="e.g. Ergonomic Keyboard"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
-            <textarea 
-              value={formData.description} disabled={isSubmitting} onChange={e => setFormData({...formData, description: e.target.value})}
-              rows="3" className="w-full border border-gray-200 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-[#FCAE8F] transition-shadow bg-gray-50 resize-none disabled:opacity-50"
-              placeholder="Details about the item..."
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Type</label>
-            <select 
-              value={formData.type} disabled={isSubmitting} onChange={e => setFormData({...formData, type: e.target.value})}
-              className="w-full border border-gray-200 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-[#FCAE8F] transition-shadow bg-gray-50 disabled:opacity-50"
-            >
-              <option value="3d_model">3D Model</option>
-              <option value="material">Material</option>
-              <option value="template">Template</option>
-            </select>
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Thumbnail URL <span className="text-gray-400 font-normal ml-1">(Optional)</span>
-            </label>
-            <input 
-              type="url" disabled={isSubmitting} value={formData.thumbnail}
-              onChange={e => setFormData({...formData, thumbnail: e.target.value})}
-              className="w-full border border-gray-200 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-[#FCAE8F] transition-shadow bg-gray-50 disabled:opacity-50"
-              placeholder="https://example.com/image.jpg"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Builder Link <span className="text-gray-400 font-normal ml-1">(Optional)</span>
-            </label>
-            <input 
-              type="url" disabled={isSubmitting} value={formData.builder_link}
-              onChange={e => setFormData({...formData, builder_link: e.target.value})}
-              className="w-full border border-gray-200 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-[#FCAE8F] transition-shadow bg-gray-50 disabled:opacity-50"
-              placeholder="https://thob.builder/asset-id"
-            />
-          </div>
-          <button 
-            type="submit" disabled={isSubmitting}
-            className="w-full bg-[#F28B59] text-white font-medium py-3 rounded-lg mt-4 hover:bg-[#e27e4e] transition-colors shadow-md shadow-[#F28B59]/20 disabled:opacity-70 flex justify-center items-center h-12"
+    <AnimatePresence>
+      {isOpen && (
+        <motion.div 
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="fixed inset-0 bg-black/80 backdrop-blur-md flex items-center justify-center z-50 p-4"
+        >
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.95, y: 10 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.95, y: 10 }}
+            transition={{ type: "spring", bounce: 0, duration: 0.4 }}
+            className="bg-[#111111] rounded-[5px] shadow-[0_20px_50px_rgba(0,0,0,0.5)] border border-white/10 w-full max-w-md max-h-[90vh] overflow-y-auto custom-scrollbar"
           >
-            {isSubmitting ? <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div> : 'Create Item'}
-          </button>
-        </form>
-      </div>
-    </div>
+            <div className="px-8 py-6 border-b border-white/5 flex justify-between items-center">
+              <h3 className="font-semibold text-xl text-white tracking-tight">New Asset</h3>
+              <button onClick={onClose} disabled={isSubmitting} className="text-[#9CA3AF] hover:text-white transition-colors">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+                </svg>
+              </button>
+            </div>
+            
+            <form onSubmit={handleSubmit} className="px-8 py-8 flex flex-col gap-5">
+              <div>
+                <label className="block text-xs font-semibold text-[#9CA3AF] mb-2 uppercase tracking-wide">Title</label>
+                <input 
+                  type="text" required disabled={isSubmitting} value={formData.title}
+                  onChange={e => setFormData({...formData, title: e.target.value})}
+                  className="w-full bg-[#0B0B0B] border border-white/10 rounded-[3px] px-4 py-3 text-white focus:outline-none focus:border-[#FF7A00] transition-colors disabled:opacity-50"
+                  placeholder="Asset Name"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-[#9CA3AF] mb-2 uppercase tracking-wide">Description</label>
+                <textarea 
+                  value={formData.description} disabled={isSubmitting} onChange={e => setFormData({...formData, description: e.target.value})}
+                  rows="3" className="w-full bg-[#0B0B0B] border border-white/10 rounded-[3px] px-4 py-3 text-white focus:outline-none focus:border-[#FF7A00] transition-colors resize-none disabled:opacity-50"
+                  placeholder="Asset specifications..."
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-[#9CA3AF] mb-2 uppercase tracking-wide">Type</label>
+                <select 
+                  value={formData.type} disabled={isSubmitting} onChange={e => setFormData({...formData, type: e.target.value})}
+                  className="w-full bg-[#0B0B0B] border border-white/10 rounded-[3px] px-4 py-3 text-white focus:outline-none focus:border-[#FF7A00] transition-colors disabled:opacity-50 appearance-none"
+                >
+                  <option value="3d_model">3D Model</option>
+                  <option value="material">Material</option>
+                  <option value="template">Template</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-[#9CA3AF] mb-2 uppercase tracking-wide">
+                  Thumbnail <span className="text-white/30 font-normal ml-1 normal-case">(Optional)</span>
+                </label>
+                <input 
+                  type="url" disabled={isSubmitting} value={formData.thumbnail}
+                  onChange={e => setFormData({...formData, thumbnail: e.target.value})}
+                  className="w-full bg-[#0B0B0B] border border-white/10 rounded-[3px] px-4 py-3 text-white focus:outline-none focus:border-[#FF7A00] transition-colors disabled:opacity-50"
+                  placeholder="https://"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-[#9CA3AF] mb-2 uppercase tracking-wide">
+                  Builder Link <span className="text-white/30 font-normal ml-1 normal-case">(Optional)</span>
+                </label>
+                <input 
+                  type="url" disabled={isSubmitting} value={formData.builder_link}
+                  onChange={e => setFormData({...formData, builder_link: e.target.value})}
+                  className="w-full bg-[#0B0B0B] border border-white/10 rounded-[3px] px-4 py-3 text-white focus:outline-none focus:border-[#FF7A00] transition-colors disabled:opacity-50"
+                  placeholder="https://"
+                />
+              </div>
+              
+              <motion.button 
+                whileHover={!isSubmitting ? { backgroundColor: '#FF8A1A' } : {}}
+                whileTap={!isSubmitting ? { scale: 0.98 } : {}}
+                type="submit" disabled={isSubmitting}
+                className="w-full bg-[#FF7A00] text-black font-semibold py-3.5 rounded-[3px] mt-6 transition-colors shadow-[0_0_15px_rgba(255,122,0,0.3)] disabled:opacity-70 flex justify-center items-center h-14"
+              >
+                {isSubmitting ? <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-black"></div> : 'Initialize Asset'}
+              </motion.button>
+            </form>
+          </motion.div>
+        </motion.div>
+      )}
+    </AnimatePresence>
   );
 };
 
@@ -224,6 +277,7 @@ function App() {
       const res = await fetch("http://localhost:9000/custom/inventory");
       if (!res.ok) throw new Error(await res.text());
       const data = await res.json();
+      
       const inventoryArray = data.inventory_items || data.inventory || data.products || [];
       setItems(inventoryArray);
     } catch (error) {
@@ -238,7 +292,6 @@ function App() {
   }, []);
 
   const handleMarkCompleted = async (id) => {
-    // 1. Optimistic UI update
     const prevItems = [...items];
     setItems(items.map(item => {
       if (item.id === id) {
@@ -250,7 +303,6 @@ function App() {
       return item;
     }));
 
-    // 2. Perform Backend Call
     try {
       const res = await fetch(`http://localhost:9000/custom/inventory/${id}`, {
         method: "PUT",
@@ -261,11 +313,10 @@ function App() {
         })
       });
       if (!res.ok) throw new Error("Failed to update on server");
-      // Silently succeed, as optimistic update is already placed
     } catch (error) {
       console.error("Failed to mark completed:", error);
       alert("Failed to update status on the server. Reverting.");
-      setItems(prevItems); // Revert UI
+      setItems(prevItems);
     }
   };
 
@@ -282,7 +333,7 @@ function App() {
       
       resetForm();
       setModalOpen(false);
-      await fetchInventory(); // Refresh true state from backend
+      await fetchInventory();
     } catch (error) {
       console.error("Failed to create item:", error);
       alert("Error creating item. Check connection and CORS configuration.");
@@ -292,40 +343,54 @@ function App() {
   };
 
   const filteredItems = items.filter(item => {
-    const status = item.metadata?.progress_status || 'in_progress';
+    const status = item.metadata?.progress_status || 'not_started';
     if (filter === 'All') return true;
     if (filter === 'Completed') return status === 'completed';
-    if (filter === 'In Progress') return status === 'in_progress';
+    if (filter === 'In Progress') return status === 'in_progress' || status === 'not_started';
     return true;
   });
 
   return (
-    <div className="min-h-screen bg-[#FFFCF1] flex font-sans text-gray-900">
+    <div className="min-h-screen bg-[#0B0B0B] flex font-sans text-white overflow-hidden">
       <Sidebar activeTab="Inventory" />
       
-      <main className="flex-1 flex flex-col pt-16 px-16 max-w-6xl w-full">
-        <Header onAddClick={() => setModalOpen(true)} />
-        <FilterBar filter={filter} setFilter={setFilter} />
+      <main className="flex-1 flex flex-col pt-12 px-20 max-w-7xl relative h-screen overflow-y-auto custom-scrollbar">
+        {/* Subtle Background Glow */}
+        <div className="absolute top-0 right-1/4 w-[500px] h-[500px] bg-[#FF7A00]/5 rounded-full blur-[120px] pointer-events-none" />
+        
+        <div className="max-w-6xl w-full mx-auto relative z-10 pb-20">
+          <Header onAddClick={() => setModalOpen(true)} />
+          <FilterBar filter={filter} setFilter={setFilter} />
 
-        {isLoading ? (
-          <div className="flex flex-1 items-center justify-center pb-32">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#FCAE8F]"></div>
-          </div>
-        ) : items.length === 0 ? (
-          <div className="p-12 text-center text-gray-500 border border-dashed border-[#EAE3DE] rounded-xl font-medium">
-            No items found. Click "+ Add items" to create one.
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 pb-12">
-            {filteredItems.map(item => (
-              <Card 
-                key={item.id} 
-                item={item} 
-                onMarkCompleted={handleMarkCompleted} 
+          {isLoading ? (
+            <div className="flex flex-1 items-center justify-center py-40">
+              <motion.div 
+                animate={{ rotate: 360 }}
+                transition={{ repeat: Infinity, duration: 1, ease: "linear" }}
+                className="rounded-full h-8 w-8 border-t-2 border-[#FF7A00]"
               />
-            ))}
-          </div>
-        )}
+            </div>
+          ) : items.length === 0 ? (
+            <motion.div 
+              initial={{ opacity: 0 }} animate={{ opacity: 1 }}
+              className="py-32 text-center text-[#9CA3AF] border border-white/5 rounded-[5px] bg-[#111111]/50 font-medium tracking-wide"
+            >
+              No assets in orbit. Click "+ Add Item" to initialize one.
+            </motion.div>
+          ) : (
+            <motion.div layout className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
+              <AnimatePresence>
+                {filteredItems.map(item => (
+                  <Card 
+                    key={item.id} 
+                    item={item} 
+                    onMarkCompleted={handleMarkCompleted} 
+                  />
+                ))}
+              </AnimatePresence>
+            </motion.div>
+          )}
+        </div>
       </main>
 
       <AddItemModal 
