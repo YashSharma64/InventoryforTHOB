@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
-// --- COMPONENTS ---
 
 const Sidebar = ({ activeTab }) => {
   const navItems = [
@@ -14,7 +13,7 @@ const Sidebar = ({ activeTab }) => {
   return (
     <aside className="w-64 flex flex-col pt-12 relative flex-shrink-0 bg-[#0B0B0B] border-r border-white/5">
       <div className="pl-12 mb-12">
-        <h1 className="text-3xl font-bold tracking-tight text-[#FF7A00] tracking-wider">THOB.</h1>
+        <h1 className="text-3xl font-bold tracking-tight text-[#FF7A00] tracking-wider">thob.</h1>
       </div>
       <div className="flex-1 pt-4 pl-12 flex flex-col gap-6">
         {navItems.map((item, i) => {
@@ -44,7 +43,7 @@ const Sidebar = ({ activeTab }) => {
 };
 
 const Header = ({ onAddClick }) => (
-  <header className="border-b border-white/5 py-8 flex items-center justify-between mb-10 relative">
+  <header className="pb-6 pt-8 flex items-center justify-between relative">
     <div className="flex-1 flex justify-start">
       <h2 className="text-3xl font-semibold text-white tracking-tight font-sans">Inventory Management</h2>
     </div>
@@ -63,7 +62,7 @@ const FilterBar = ({ filter, setFilter }) => {
   const tabs = ['All', 'Completed', 'In Progress'];
   
   return (
-    <div className="flex gap-8 mb-10 border-b border-white/5 relative">
+    <div className="flex gap-8 border-b border-white/5 relative">
       {tabs.map(f => {
         const isActive = filter === f;
         return (
@@ -262,7 +261,6 @@ const AddItemModal = ({ isOpen, onClose, onSubmit, isSubmitting }) => {
   );
 };
 
-// --- MAIN APP ENTRY ---
 
 function App() {
   const [items, setItems] = useState([]);
@@ -354,13 +352,15 @@ function App() {
     <div className="min-h-screen bg-[#0B0B0B] flex font-sans text-white overflow-hidden">
       <Sidebar activeTab="Inventory" />
       
-      <main className="flex-1 flex flex-col pt-12 px-20 max-w-7xl relative h-screen overflow-y-auto custom-scrollbar">
+      <main className="flex-1 flex flex-col px-20 max-w-7xl relative h-screen overflow-y-auto custom-scrollbar">
         {/* Subtle Background Glow */}
         <div className="absolute top-0 right-1/4 w-[500px] h-[500px] bg-[#FF7A00]/5 rounded-full blur-[120px] pointer-events-none" />
         
         <div className="max-w-6xl w-full mx-auto relative z-10 pb-20">
-          <Header onAddClick={() => setModalOpen(true)} />
-          <FilterBar filter={filter} setFilter={setFilter} />
+          <div className="sticky top-0 z-50 bg-[#0B0B0B]/95 backdrop-blur-md pt-12 pb-4 mb-8 -mx-2 px-2">
+            <Header onAddClick={() => setModalOpen(true)} />
+            <FilterBar filter={filter} setFilter={setFilter} />
+          </div>
 
           {isLoading ? (
             <div className="flex flex-1 items-center justify-center py-40">
