@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { Toaster, toast } from 'sonner';
 
 
 const Sidebar = ({ activeTab }) => {
@@ -336,9 +337,10 @@ function App() {
         })
       });
       if (!res.ok) throw new Error("Failed to update on server");
+      toast.success("Asset marked as completed");
     } catch (error) {
       console.error("Failed to mark completed:", error);
-      alert("Failed to update status on the server. Reverting.");
+      toast.error("Failed to update status on the server. Reverting.");
       setItems(prevItems);
     }
   };
@@ -367,9 +369,10 @@ function App() {
       setModalOpen(false);
       setItemToEdit(null);
       await fetchInventory();
+      toast.success(`Asset ${itemToEdit ? 'updated' : 'initialized'} successfully`);
     } catch (error) {
       console.error(`Failed to ${itemToEdit ? 'update' : 'create'} item:`, error);
-      alert(`Error ${itemToEdit ? 'updating' : 'creating'} item. Check connection.`);
+      toast.error(`Error ${itemToEdit ? 'updating' : 'creating'} item. Check connection.`);
     } finally {
       setIsSubmitting(false);
     }
@@ -387,9 +390,10 @@ function App() {
         method: "DELETE",
       });
       if (!res.ok) throw new Error("Failed to delete on server");
+      toast.success("Asset deleted successfully");
     } catch (error) {
       console.error("Failed to delete item:", error);
-      alert("Failed to delete from server. Reverting.");
+      toast.error("Failed to delete from server. Reverting.");
       setItems(prevItems);
     }
   };
@@ -461,6 +465,7 @@ function App() {
         isSubmitting={isSubmitting}
         initialData={itemToEdit}
       />
+      <Toaster theme="dark" position="bottom-right" toastOptions={{ style: { background: '#111111', border: '1px solid rgba(255, 255, 255, 0.1)', color: '#fff' } }} />
     </div>
   );
 }
