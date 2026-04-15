@@ -89,7 +89,7 @@ const FilterBar = ({ filter, setFilter }) => {
   );
 };
 
-const Card = ({ item, onMarkCompleted }) => {
+const Card = ({ item, onMarkCompleted, onEdit, onDelete }) => {
   const metadata = item.metadata || {};
   const status = metadata.progress_status || 'in_progress';
   const type = metadata.type || 'Unknown';
@@ -120,9 +120,17 @@ const Card = ({ item, onMarkCompleted }) => {
             {type.replace('_', ' ')}
           </span>
         </div>
-        <div className={`w-2 h-2 rounded-full mt-2 ${
-          isCompleted ? 'bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.6)]' : 'bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.6)]'
-        }`} title={status === 'not_started' ? 'in_progress' : status} />
+        <div className="flex gap-3 items-center">
+          <button onClick={() => onEdit(item)} className="text-[#9CA3AF] hover:text-white transition-colors p-1" title="Edit">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
+          </button>
+          <button onClick={() => onDelete(item.id)} className="text-[#9CA3AF] hover:text-red-500 transition-colors p-1" title="Delete">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+          </button>
+          <div className={`w-2 h-2 rounded-full ml-1 ${
+            isCompleted ? 'bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.6)]' : 'bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.6)]'
+          }`} title={status === 'not_started' ? 'in_progress' : status} />
+        </div>
       </div>
       
       <p className="text-[#9CA3AF] text-sm mb-8 flex-1 line-clamp-3 overflow-hidden leading-relaxed z-10">
@@ -154,7 +162,7 @@ const Card = ({ item, onMarkCompleted }) => {
   );
 };
 
-const AddItemModal = ({ isOpen, onClose, onSubmit, isSubmitting }) => {
+const AssetModal = ({ isOpen, onClose, onSubmit, isSubmitting, initialData = null }) => {
   const [formData, setFormData] = useState({
     title: '',
     description: '',
@@ -162,6 +170,20 @@ const AddItemModal = ({ isOpen, onClose, onSubmit, isSubmitting }) => {
     thumbnail: '',
     builder_link: ''
   });
+
+  useEffect(() => {
+    if (initialData) {
+      setFormData({
+        title: initialData.title || '',
+        description: initialData.description || '',
+        type: initialData.metadata?.type || '3d_model',
+        thumbnail: initialData.thumbnail || '',
+        builder_link: initialData.metadata?.builder_link || ''
+      });
+    } else {
+      setFormData({ title: '', description: '', type: '3d_model', thumbnail: '', builder_link: '' });
+    }
+  }, [initialData, isOpen]);
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -185,7 +207,7 @@ const AddItemModal = ({ isOpen, onClose, onSubmit, isSubmitting }) => {
             className="bg-[#111111] rounded-[5px] shadow-[0_20px_50px_rgba(0,0,0,0.5)] border border-white/10 w-full max-w-md max-h-[90vh] overflow-y-auto custom-scrollbar"
           >
             <div className="px-8 py-6 border-b border-white/5 flex justify-between items-center">
-              <h3 className="font-semibold text-xl text-white tracking-tight">New Asset</h3>
+              <h3 className="font-semibold text-xl text-white tracking-tight">{initialData ? 'Edit Asset' : 'New Asset'}</h3>
               <button onClick={onClose} disabled={isSubmitting} className="text-[#9CA3AF] hover:text-white transition-colors">
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" viewBox="0 0 20 20" fill="currentColor">
                   <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
@@ -251,7 +273,7 @@ const AddItemModal = ({ isOpen, onClose, onSubmit, isSubmitting }) => {
                 type="submit" disabled={isSubmitting}
                 className="w-full bg-[#FF7A00] text-black font-semibold py-3.5 rounded-[3px] mt-6 transition-colors shadow-[0_0_15px_rgba(255,122,0,0.3)] disabled:opacity-70 flex justify-center items-center h-14"
               >
-                {isSubmitting ? <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-black"></div> : 'Initialize Asset'}
+                {isSubmitting ? <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-black"></div> : (initialData ? 'Save Changes' : 'Initialize Asset')}
               </motion.button>
             </form>
           </motion.div>
@@ -266,6 +288,7 @@ function App() {
   const [items, setItems] = useState([]);
   const [filter, setFilter] = useState('All');
   const [isModalOpen, setModalOpen] = useState(false);
+  const [itemToEdit, setItemToEdit] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -302,12 +325,14 @@ function App() {
     }));
 
     try {
+      const itemToUpdate = items.find(i => i.id === id);
       const res = await fetch(`http://localhost:9000/custom/inventory/${id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           progress_status: "completed",
-          builder_link: "https://example.com"
+          builder_link: itemToUpdate?.metadata?.builder_link || "https://example.com",
+          type: itemToUpdate?.metadata?.type || "Unknown"
         })
       });
       if (!res.ok) throw new Error("Failed to update on server");
@@ -318,26 +343,60 @@ function App() {
     }
   };
 
-  const handleAddItem = async (formData, resetForm) => {
+  const handleSubmitItem = async (formData, resetForm) => {
     setIsSubmitting(true);
     try {
-      const res = await fetch("http://localhost:9000/custom/inventory", {
-        method: "POST",
+      const url = itemToEdit 
+        ? `http://localhost:9000/custom/inventory/${itemToEdit.id}`
+        : "http://localhost:9000/custom/inventory";
+        
+      const payload = { ...formData };
+      if (itemToEdit && itemToEdit.metadata?.progress_status) {
+        payload.progress_status = itemToEdit.metadata.progress_status;
+      }
+      
+      const res = await fetch(url, {
+        method: itemToEdit ? "PUT" : "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData)
+        body: JSON.stringify(payload)
       });
       
       if (!res.ok) throw new Error(await res.text());
       
       resetForm();
       setModalOpen(false);
+      setItemToEdit(null);
       await fetchInventory();
     } catch (error) {
-      console.error("Failed to create item:", error);
-      alert("Error creating item. Check connection and CORS configuration.");
+      console.error(`Failed to ${itemToEdit ? 'update' : 'create'} item:`, error);
+      alert(`Error ${itemToEdit ? 'updating' : 'creating'} item. Check connection.`);
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  const handleDeleteItem = async (id) => {
+    if (!window.confirm("Are you sure you want to delete this asset?")) return;
+    
+    // Optimistic UI update
+    const prevItems = [...items];
+    setItems(items.filter(item => item.id !== id));
+    
+    try {
+      const res = await fetch(`http://localhost:9000/custom/inventory/${id}`, {
+        method: "DELETE",
+      });
+      if (!res.ok) throw new Error("Failed to delete on server");
+    } catch (error) {
+      console.error("Failed to delete item:", error);
+      alert("Failed to delete from server. Reverting.");
+      setItems(prevItems);
+    }
+  };
+
+  const openEditModal = (item) => {
+    setItemToEdit(item);
+    setModalOpen(true);
   };
 
   const filteredItems = items.filter(item => {
@@ -358,7 +417,7 @@ function App() {
         
         <div className="max-w-6xl w-full mx-auto relative z-10 pb-20">
           <div className="sticky top-0 z-50 bg-[#0B0B0B]/95 backdrop-blur-md pt-12 pb-4 mb-8 -mx-2 px-2">
-            <Header onAddClick={() => setModalOpen(true)} />
+            <Header onAddClick={() => { setItemToEdit(null); setModalOpen(true); }} />
             <FilterBar filter={filter} setFilter={setFilter} />
           </div>
 
@@ -385,6 +444,8 @@ function App() {
                     key={item.id} 
                     item={item} 
                     onMarkCompleted={handleMarkCompleted} 
+                    onEdit={openEditModal}
+                    onDelete={handleDeleteItem}
                   />
                 ))}
               </AnimatePresence>
@@ -393,11 +454,12 @@ function App() {
         </div>
       </main>
 
-      <AddItemModal 
+      <AssetModal 
         isOpen={isModalOpen} 
-        onClose={() => setModalOpen(false)} 
-        onSubmit={handleAddItem}
+        onClose={() => { setModalOpen(false); setItemToEdit(null); }} 
+        onSubmit={handleSubmitItem}
         isSubmitting={isSubmitting}
+        initialData={itemToEdit}
       />
     </div>
   );
