@@ -1,13 +1,17 @@
 // GET /admin/inventory - List all inventory items
 export const GET = async (req, res) => {
   const query = req.scope.resolve("query")
+  
+  const take = parseInt(req.query.take, 10) || 20
+  const skip = parseInt(req.query.skip, 10) || 0
 
   const { data: products } = await query.graph({
     entity: "product",
     fields: ["id", "title", "description", "thumbnail", "metadata"],
+    pagination: { skip, take }
   })
 
-  res.json({ inventory_items: products })
+  res.json({ inventory_items: products, count: products.length, skip, take })
 }
 
 // POST /admin/inventory - Create inventory item

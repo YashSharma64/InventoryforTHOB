@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Toaster, toast } from 'sonner';
 
@@ -293,25 +293,78 @@ function App() {
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const fetchInventory = async () => {
-    setIsLoading(true);
+  // Pagination states
+  const [skip, setSkip] = useState(0);
+  const [hasMore, setHasMore] = useState(true);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const observerTarget = useRef(null);
+  const TAKE = 9;
+
+  const fetchInventory = async (reset = false) => {
+    if (reset) {
+      setIsLoading(true);
+      setSkip(0);
+      setHasMore(true);
+    } else {
+      setIsLoadingMore(true);
+    }
+
     try {
-      const res = await fetch("http://localhost:9000/custom/inventory");
+      const currentSkip = reset ? 0 : skip;
+      const res = await fetch(`http://localhost:9000/custom/inventory?skip=${currentSkip}&take=${TAKE}`);
       if (!res.ok) throw new Error(await res.text());
       const data = await res.json();
       
       const inventoryArray = data.inventory_items || data.inventory || data.products || [];
-      setItems(inventoryArray);
+      
+      if (reset) {
+        setItems(inventoryArray);
+      } else {
+        setItems(prev => {
+          const existingIds = new Set(prev.map(i => i.id));
+          const newItems = inventoryArray.filter(i => !existingIds.has(i.id));
+          return [...prev, ...newItems];
+        });
+      }
+      
+      setSkip(currentSkip + TAKE);
+      if (inventoryArray.length < TAKE) {
+        setHasMore(false);
+      } else {
+        setHasMore(true);
+      }
     } catch (error) {
       console.error("Failed to fetch inventory:", error);
     } finally {
-      setIsLoading(false);
+      if (reset) setIsLoading(false);
+      else setIsLoadingMore(false);
     }
   };
 
   useEffect(() => {
-    fetchInventory();
+    fetchInventory(true);
   }, []);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      entries => {
+        if (entries[0].isIntersecting && hasMore && !isLoading && !isLoadingMore) {
+          fetchInventory(false);
+        }
+      },
+      { threshold: 0.1 }
+    );
+
+    if (observerTarget.current) {
+      observer.observe(observerTarget.current);
+    }
+
+    return () => {
+      if (observerTarget.current) {
+        observer.unobserve(observerTarget.current);
+      }
+    };
+  }, [observerTarget, hasMore, isLoading, isLoadingMore, skip, items]);
 
   const handleMarkCompleted = async (id) => {
     const prevItems = [...items];
@@ -368,7 +421,7 @@ function App() {
       resetForm();
       setModalOpen(false);
       setItemToEdit(null);
-      await fetchInventory();
+      await fetchInventory(true);
       toast.success(`Asset ${itemToEdit ? 'updated' : 'initialized'} successfully`);
     } catch (error) {
       console.error(`Failed to ${itemToEdit ? 'update' : 'create'} item:`, error);
@@ -441,19 +494,33 @@ function App() {
               No assets in orbit. Click "+ Add Item" to initialize one.
             </motion.div>
           ) : (
-            <motion.div layout className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
-              <AnimatePresence>
-                {filteredItems.map(item => (
-                  <Card 
-                    key={item.id} 
-                    item={item} 
-                    onMarkCompleted={handleMarkCompleted} 
-                    onEdit={openEditModal}
-                    onDelete={handleDeleteItem}
+            <div className="pb-8">
+              <motion.div layout className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
+                <AnimatePresence>
+                  {filteredItems.map(item => (
+                    <Card 
+                      key={item.id} 
+                      item={item} 
+                      onMarkCompleted={handleMarkCompleted} 
+                      onEdit={openEditModal}
+                      onDelete={handleDeleteItem}
+                    />
+                  ))}
+                </AnimatePresence>
+              </motion.div>
+              
+              {isLoadingMore && (
+                <div className="flex justify-center py-12">
+                  <motion.div 
+                    animate={{ rotate: 360 }}
+                    transition={{ repeat: Infinity, duration: 1, ease: "linear" }}
+                    className="rounded-full h-8 w-8 border-t-2 border-[#FF7A00]"
                   />
-                ))}
-              </AnimatePresence>
-            </motion.div>
+                </div>
+              )}
+              
+              <div ref={observerTarget} className="h-4 w-full mt-4" />
+            </div>
           )}
         </div>
       </main>
